@@ -777,51 +777,49 @@ export default function Home() {
           >
             <span>＋</span> Sell a part
           </button>
-          {supabase && (
-            user ? (
-              <div className={styles.accountControls}>
-                <span className={styles.accountIdentity}>
-                  <strong>{profile?.display_name ?? "Loading account…"}</strong>
-                  {profile && <small>{profile.account_type} account</small>}
-                </span>
-                <button
-                  className={styles.accountButton}
-                  onClick={() => {
-                    setShowSavedOnly(true);
-                    document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                >
-                  Saved ({saved.length})
-                </button>
-                <button
-                  className={styles.accountButton}
-                  onClick={() => setIsOrdersOpen(true)}
-                >
-                  My orders
-                </button>
-                {profile?.account_type === "buyer" && (
-                  <button
-                    className={styles.accountButton}
-                    onClick={() => setIsSellerPromptOpen(true)}
-                  >
-                    Become a seller
-                  </button>
-                )}
-                <button className={styles.accountButton} onClick={() => void signOut()}>
-                  Sign out
-                </button>
-              </div>
-            ) : (
+          {supabase && user ? (
+            <div className={styles.accountControls}>
+              <span className={styles.accountIdentity}>
+                <strong>{profile?.display_name ?? "Loading account…"}</strong>
+                {profile && <small>{profile.account_type} account</small>}
+              </span>
               <button
                 className={styles.accountButton}
                 onClick={() => {
-                  setIsSignUp(false);
-                  setIsAuthOpen(true);
+                  setShowSavedOnly(true);
+                  document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
                 }}
               >
-                Sign in
+                Saved ({saved.length})
               </button>
-            )
+              <button
+                className={styles.accountButton}
+                onClick={() => setIsOrdersOpen(true)}
+              >
+                My orders
+              </button>
+              {profile?.account_type === "buyer" && (
+                <button
+                  className={styles.accountButton}
+                  onClick={() => setIsSellerPromptOpen(true)}
+                >
+                  Become a seller
+                </button>
+              )}
+              <button className={styles.accountButton} onClick={() => void signOut()}>
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <button
+              className={styles.accountButton}
+              onClick={() => {
+                setIsSignUp(false);
+                setIsAuthOpen(true);
+              }}
+            >
+              Sign in
+            </button>
           )}
           <button
             className={styles.cartButton}
@@ -853,9 +851,17 @@ export default function Home() {
           </div>
         )
       ) : (
-        <div className={styles.demoNotice}>
-          Preview mode · Start local Supabase to save listings and create a seller account
-        </div>
+        <>
+          <div className={styles.demoNotice}>
+            Preview mode · Configure Supabase to enable accounts, saved carts, and orders
+          </div>
+          {backendError && (
+            <div className={styles.backendAlert} role="alert">
+              {backendError}
+              <button onClick={() => setBackendError("")} aria-label="Dismiss error">×</button>
+            </div>
+          )}
+        </>
       )}
 
       <section className={styles.hero}>
@@ -1166,27 +1172,36 @@ export default function Home() {
                 ? "Choose a buyer account or start as a seller. You can upgrade to seller later."
                 : "Sign in to access your Partsy account."}
             </p>
-            <form className={styles.sellForm} onSubmit={submitAuth}>
-              {isSignUp && (
-                <>
-                  <label>Your name<input name="displayName" autoComplete="name" required maxLength={80} /></label>
-                  <label>
-                    Account type
-                    <select name="accountType" defaultValue="buyer">
-                      <option value="buyer">Buyer — browse and shop parts</option>
-                      <option value="seller">Seller — list and manage parts</option>
-                    </select>
-                  </label>
-                </>
-              )}
-              <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-              <label>Password<input name="password" type="password" autoComplete={isSignUp ? "new-password" : "current-password"} minLength={8} required /></label>
-              <button className={styles.primaryButton} type="submit">{isSignUp ? "Create account" : "Sign in"} <ArrowIcon /></button>
-            </form>
-            <p className={styles.authSwitch}>
-              {isSignUp ? "Already have an account?" : "New to Partsy?"}{" "}
-              <button onClick={() => setIsSignUp((current) => !current)}>{isSignUp ? "Sign in" : "Create an account"}</button>
-            </p>
+            {supabase ? (
+              <>
+                <form className={styles.sellForm} onSubmit={submitAuth}>
+                  {isSignUp && (
+                    <>
+                      <label>Your name<input name="displayName" autoComplete="name" required maxLength={80} /></label>
+                      <label>
+                        Account type
+                        <select name="accountType" defaultValue="buyer">
+                          <option value="buyer">Buyer — browse and shop parts</option>
+                          <option value="seller">Seller — list and manage parts</option>
+                        </select>
+                      </label>
+                    </>
+                  )}
+                  <label>Email<input name="email" type="email" autoComplete="email" required /></label>
+                  <label>Password<input name="password" type="password" autoComplete={isSignUp ? "new-password" : "current-password"} minLength={8} required /></label>
+                  <button className={styles.primaryButton} type="submit">{isSignUp ? "Create account" : "Sign in"} <ArrowIcon /></button>
+                </form>
+                <p className={styles.authSwitch}>
+                  {isSignUp ? "Already have an account?" : "New to Partsy?"}{" "}
+                  <button onClick={() => setIsSignUp((current) => !current)}>{isSignUp ? "Sign in" : "Create an account"}</button>
+                </p>
+              </>
+            ) : (
+              <div className={styles.accountSetupNotice} role="alert">
+                Account sign-in and registration are unavailable because Supabase isn’t configured for this deployment. In Netlify, add
+                {" "}NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY as environment variables, then redeploy.
+              </div>
+            )}
           </section>
         </div>
       )}
@@ -1279,9 +1294,18 @@ export default function Home() {
                   ))}
                 </div>
                 <div className={styles.cartTotal}><span>Order request total</span><strong>{peso(cartProducts.reduce((total, entry) => total + entry.product.price * entry.quantity, 0))}</strong></div>
-                <button className={styles.primaryButton} onClick={() => {
-                  void submitOrderRequest();
-                }}>Submit order request <ArrowIcon /></button>
+                {!supabase && (
+                  <div className={styles.accountSetupNotice} role="alert">
+                    This preview cart cannot place an order. Configure Supabase for this deployment to enable sign-in and order requests.
+                  </div>
+                )}
+                <button
+                  className={styles.primaryButton}
+                  disabled={!supabase}
+                  onClick={() => void submitOrderRequest()}
+                >
+                  Submit order request <ArrowIcon />
+                </button>
                 <p className={styles.formFootnote}>Creates a pending request in Supabase. No payment is collected.</p>
               </>
             )}

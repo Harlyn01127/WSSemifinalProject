@@ -1278,6 +1278,22 @@
   text-align: center;
 }
 
+.accountSetupNotice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #e1dbc2;
+  border-radius: 5px;
+  background: #f7f4e9;
+  color: #665a35;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .authSwitch {
   margin-top: 15px;
   color: #81877f;

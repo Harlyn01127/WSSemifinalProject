@@ -37,6 +37,19 @@ For an already-hosted Supabase project, set the project URL and publishable key 
 2. `supabase/migrations/20261106000001_create_buyer_data.sql` creates private favorites and cart tables, order requests/items, and database functions for cart quantity changes and atomic order-request submission.
 3. `supabase/migrations/20261106000002_seed_marketplace_products.sql` adds 28 starter products across all marketplace categories.
 
+## Deploy to Netlify
+
+In Netlify, open the site's **Environment variables** settings and add these variables for every deploy context:
+
+- `NEXT_PUBLIC_SUPABASE_URL` — the Supabase project's API URL.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — the project's publishable key. Never use a service-role or secret key here.
+
+These `NEXT_PUBLIC_` values are included in the client bundle at build time. Trigger a new deploy after adding or changing them. Without both values, the site intentionally runs in preview mode: sign-in, account creation, and order requests are unavailable.
+
+In the Supabase Dashboard, open **Authentication → URL Configuration**. Set **Site URL** to the deployed Netlify URL and add that site's URL to **Redirect URLs**. Also confirm email confirmation settings match the signup flow you intend to demonstrate.
+
+Before ordering, apply all three SQL migrations above in timestamp order. Buyers must create an account or sign in before adding items to their database-backed cart and submitting an order request.
+
 Open the app and create an account as a buyer or seller. Supabase may require email confirmation, depending on the project's Auth settings. A buyer can select **Become a seller** after signing in. Seller accounts can list and manage their own products; database policies prevent buyer accounts from writing listings. Signed-in buyers can persist saved parts and cart quantities, submit an order request with a database-calculated total and item snapshots, and review their request history. This does not collect payment.
 
 To stop local Supabase, run `npm run db:stop`. To reset the local database and reapply migrations, run `npm run db:reset`.
