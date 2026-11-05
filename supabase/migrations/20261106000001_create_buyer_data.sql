@@ -108,14 +108,15 @@ begin
   end if;
 
   if p_quantity_delta = 1 then
-    insert into public.cart_items (buyer_id, product_id, quantity)
+    insert into public.cart_items as existing_cart (buyer_id, product_id, quantity)
     values (auth.uid(), p_product_id, 1)
     on conflict (buyer_id, product_id) do update
-      set quantity = public.cart_items.quantity + 1,
+      set quantity = existing_cart.quantity + 1,
           updated_at = now()
+      where existing_cart.quantity < 20
     returning quantity into next_quantity;
 
-    if next_quantity > 20 then
+    if not found then
       raise exception 'The maximum quantity per part is 20';
     end if;
     return next_quantity;

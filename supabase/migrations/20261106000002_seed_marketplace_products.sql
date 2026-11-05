@@ -6,12 +6,18 @@ returns trigger
 language plpgsql
 set search_path = ''
 as $$
+declare
+  authenticated_seller uuid := auth.uid();
 begin
-  if auth.uid() is null and new.seller_id is null then
-    return new;
+  if authenticated_seller is null then
+    if current_user = 'postgres' and new.seller_id is null then
+      return new;
+    end if;
+
+    raise exception 'A listing must belong to the signed-in seller';
   end if;
 
-  if auth.uid() is null or new.seller_id <> auth.uid() then
+  if new.seller_id is distinct from authenticated_seller then
     raise exception 'A listing must belong to the signed-in seller';
   end if;
 
