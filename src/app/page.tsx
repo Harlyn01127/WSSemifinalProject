@@ -201,6 +201,11 @@ export default function Home() {
   const [backendError, setBackendError] = useState("");
   const [notice, setNotice] = useState("");
 
+  const showTransientNotice = (message: string, timeout = 2600) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(""), timeout);
+  };
+
   useEffect(() => {
     const client = supabase;
     if (!client) return;
@@ -358,8 +363,7 @@ export default function Home() {
       if (!user) {
         setIsSignUp(false);
         setIsAuthOpen(true);
-        setNotice("Sign in to save parts to your account");
-        window.setTimeout(() => setNotice(""), 2600);
+        showTransientNotice("Sign in to save parts to your account");
         return;
       }
 
@@ -393,8 +397,7 @@ export default function Home() {
       if (!user) {
         setIsSignUp(false);
         setIsAuthOpen(true);
-        setNotice("Sign in to save your cart");
-        window.setTimeout(() => setNotice(""), 2600);
+        showTransientNotice("Sign in to save your cart");
         return;
       }
       if (product.sellerId === user.id) {
@@ -420,8 +423,7 @@ export default function Home() {
           )
         : [...current, { productId: product.id, quantity: 1 }];
     });
-    setNotice(`${product.name} added to your cart`);
-    window.setTimeout(() => setNotice(""), 2600);
+    showTransientNotice(`${product.name} added to your cart`);
   }
 
   async function changeCartQuantity(productId: string, delta: -1 | 1) {
@@ -463,8 +465,7 @@ export default function Home() {
       setIsCartOpen(false);
       setIsSignUp(false);
       setIsAuthOpen(true);
-      setNotice("Sign in to submit an order request");
-      window.setTimeout(() => setNotice(""), 2600);
+      showTransientNotice("Sign in to submit an order request");
       return;
     }
     if (cart.length === 0) {
@@ -478,12 +479,13 @@ export default function Home() {
       return;
     }
 
+    const orderReference = typeof orderId === "string" ? orderId.slice(0, 8) : "request";
+
     setCart([]);
     setIsCartOpen(false);
     setIsOrdersOpen(true);
     setBackendError("");
-    setNotice(`Order request ${orderId.slice(0, 8)} saved. No payment was collected.`);
-    window.setTimeout(() => setNotice(""), 4000);
+    showTransientNotice(`Order request ${orderReference} saved. No payment was collected.`, 4000);
 
     const { data, error: historyError } = await supabase
       .from("orders")
@@ -558,7 +560,12 @@ export default function Home() {
       String(formData.get("image")).trim() ||
       "https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=900&q=85";
 
-    if (!name || !Number.isFinite(price) || price <= 0) {
+    if (!name) {
+      setBackendError("Add a product name before publishing your listing.");
+      return;
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      setBackendError("Enter a valid price in PHP greater than zero.");
       return;
     }
 
@@ -566,8 +573,7 @@ export default function Home() {
       setIsSellOpen(false);
       setIsAuthOpen(true);
       setIsSignUp(true);
-      setNotice("Sign in to publish a listing");
-      window.setTimeout(() => setNotice(""), 2600);
+      showTransientNotice("Sign in to publish a listing");
       return;
     }
     if (supabase && profile?.account_type !== "seller") {
@@ -662,14 +668,14 @@ export default function Home() {
       setProducts((current) => [
         {
           id: `demo-${Date.now()}`,
-        name,
-        category,
-        price,
-        condition,
-        seller: "You",
-        location: "Metro Manila",
-        rating: "New seller",
-        image,
+          name,
+          category,
+          price,
+          condition,
+          seller: "You",
+          location: "Metro Manila",
+          rating: "New seller",
+          image,
         },
         ...current,
       ]);
@@ -679,18 +685,23 @@ export default function Home() {
     setIsSellOpen(false);
     setEditingProduct(null);
     setBackendError("");
-    setNotice(editingProduct ? "Your listing has been updated" : "Your part is now listed in the marketplace");
-    window.setTimeout(() => setNotice(""), 2600);
+    showTransientNotice(
+      editingProduct ? "Your listing has been updated" : "Your part is now listed in the marketplace",
+    );
   }
 
   async function submitAuth(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!supabase) return;
     const formData = new FormData(event.currentTarget);
-    const email = String(formData.get("email")).trim();
-    const password = String(formData.get("password"));
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
     const displayName = String(formData.get("displayName") ?? "").trim();
     const accountType = String(formData.get("accountType") ?? "buyer");
+    if (!email || !password) {
+      setBackendError("Enter both an email address and a password.");
+      return;
+    }
     if (isSignUp && accountType !== "buyer" && accountType !== "seller") {
       setBackendError("Choose whether this is a buyer or seller account.");
       return;
@@ -713,17 +724,17 @@ export default function Home() {
       return;
     }
     if (isSignUp && !result.data.session) {
-      setNotice("Account created. Check your email to confirm, then sign in.");
+      showTransientNotice("Account created. Check your email to confirm, then sign in.", 3500);
     } else {
-      setNotice(
+      showTransientNotice(
         isSignUp
           ? `Your ${accountType} account is ready`
           : "Welcome back",
+        3500,
       );
     }
     setBackendError("");
     setIsAuthOpen(false);
-    window.setTimeout(() => setNotice(""), 3500);
   }
 
   async function signOut() {
@@ -733,8 +744,7 @@ export default function Home() {
       setBackendError(`Could not sign out: ${error.message}`);
       return;
     }
-    setNotice("You have signed out");
-    window.setTimeout(() => setNotice(""), 2600);
+    showTransientNotice("You have signed out");
   }
 
   async function deleteListing(product: Product) {
@@ -746,8 +756,7 @@ export default function Home() {
       }
     }
     setProducts((current) => current.filter((item) => item.id !== product.id));
-    setNotice("Listing removed");
-    window.setTimeout(() => setNotice(""), 2600);
+    showTransientNotice("Listing removed");
   }
 
   return (
@@ -949,8 +958,7 @@ export default function Home() {
               setProducts((current) =>
                 [...current].sort((a, b) => a.price - b.price),
               );
-              setNotice("Sorted by price: lowest first");
-              window.setTimeout(() => setNotice(""), 2600);
+              showTransientNotice("Sorted by price: lowest first");
             }}
           >
             <span>☷</span> Price: low to high
