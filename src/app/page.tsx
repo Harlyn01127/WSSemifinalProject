@@ -358,6 +358,43 @@ export default function Home() {
     );
   const cartCount = cart.reduce((total, entry) => total + entry.quantity, 0);
 
+  const mobileNavItems = [
+    {
+      label: "Home",
+      icon: "⌂",
+      action: () => {
+        setActiveCategory("All parts");
+        setShowSavedOnly(false);
+        document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
+      },
+      active: !showSavedOnly && activeCategory === "All parts",
+    },
+    {
+      label: "Browse",
+      icon: "▣",
+      action: () => {
+        setActiveCategory("All parts");
+        document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" });
+      },
+      active: activeCategory !== "All parts",
+    },
+    {
+      label: "Saved",
+      icon: "♡",
+      action: () => {
+        setShowSavedOnly(true);
+        document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
+      },
+      active: showSavedOnly,
+    },
+    {
+      label: "Cart",
+      icon: "◌",
+      action: () => setIsCartOpen(true),
+      active: isCartOpen,
+    },
+  ];
+
   async function toggleSaved(id: string) {
     if (supabase) {
       if (!user) {
@@ -1112,6 +1149,20 @@ export default function Home() {
         <span>Good parts deserve another build. © 2026 Partsy Market</span>
         <a href="#marketplace">Back to the top ↑</a>
       </footer>
+
+      <nav className={styles.mobileNav} aria-label="Mobile navigation">
+        {mobileNavItems.map((item) => (
+          <button
+            key={item.label}
+            className={`${styles.mobileNavItem} ${item.active ? styles.mobileNavItemActive : ""}`}
+            onClick={item.action}
+            type="button"
+          >
+            <span className={styles.mobileNavIcon}>{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
 
       {notice && <div className={styles.toast} role="status">{notice}</div>}
 
