@@ -1144,49 +1144,55 @@
   font-weight: 700;
 }
 
-.mobileNav {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  left: 12px;
-  z-index: 18;
+.mobileMenuButton {
   display: none;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding: 9px 12px 10px;
-  border: 1px solid rgba(20, 31, 22, 0.06);
-  border-radius: 22px;
-  background: rgba(251, 250, 246, 0.94);
-  box-shadow: 0 18px 50px rgb(25 38 28 / 14%);
-  backdrop-filter: blur(12px);
-}
-
-.mobileNavItem {
-  display: grid;
-  justify-items: center;
-  gap: 5px;
-  padding: 7px 0 5px;
-  border: 0;
-  background: transparent;
-  color: #7d867c;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  padding: 0;
+  border: 1px solid #e5e9df;
+  border-radius: 10px;
+  background: #fff;
   cursor: pointer;
-  font-size: 9px;
-  font-weight: 700;
 }
 
-.mobileNavItemActive {
-  border-radius: 14px;
-  background: #edf3e7;
-  color: #2d4d39;
+.mobileMenuButton span {
+  display: block;
+  width: 16px;
+  height: 2px;
+  margin: 4px auto;
+  border-radius: 999px;
+  background: #2d4d39;
 }
 
-.mobileNavIcon {
+.mobileMenuPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  left: 0;
+  z-index: 8;
   display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  font-size: 15px;
-  line-height: 1;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #e8ebdf;
+  border-radius: 14px;
+  background: rgba(251, 250, 246, 0.98);
+  box-shadow: 0 18px 45px rgb(25 38 28 / 12%);
+}
+
+.mobileMenuPanel button {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #eef1e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #34463a;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: left;
 }
 
 .toast {
@@ -1598,16 +1604,19 @@
     backdrop-filter: blur(10px);
   }
   .mainNav { display: none; }
+  .header {
+    position: sticky;
+    z-index: 12;
+  }
   .headerActions { gap: 8px; }
   .accountControls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 6px;
+    display: none;
   }
   .accountIdentity { display: none; }
-  .accountButton { min-height: 29px; padding: 0 7px; font-size: 8px; }
-  .sellButton { min-height: 35px; padding: 0 9px; font-size: 8px; }
+  .accountButton { display: none; }
+  .sellButton { display: none; }
+  .cartButton { width: 30px; height: 30px; }
+  .mobileMenuButton { display: inline-block; }
   .hero {
     width: calc(100% - 32px);
     grid-template-columns: 1fr;
@@ -1726,7 +1735,6 @@
   }
   .footer > span { display: none; }
   .footer > a:last-child { font-size: 8px; }
-  .mobileNav { display: grid; }
   .modal { padding: 27px 21px 23px; }
   .cartItem { grid-template-columns: 39px 1fr auto; gap: 7px; }
   .cartThumb { width: 39px; height: 38px; }

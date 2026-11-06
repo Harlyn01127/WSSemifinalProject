@@ -192,6 +192,7 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isSellerPromptOpen, setIsSellerPromptOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -357,43 +358,6 @@ export default function Home() {
       Boolean(entry.product),
     );
   const cartCount = cart.reduce((total, entry) => total + entry.quantity, 0);
-
-  const mobileNavItems = [
-    {
-      label: "Home",
-      icon: "⌂",
-      action: () => {
-        setActiveCategory("All parts");
-        setShowSavedOnly(false);
-        document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
-      },
-      active: !showSavedOnly && activeCategory === "All parts",
-    },
-    {
-      label: "Browse",
-      icon: "▣",
-      action: () => {
-        setActiveCategory("All parts");
-        document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" });
-      },
-      active: activeCategory !== "All parts",
-    },
-    {
-      label: "Saved",
-      icon: "♡",
-      action: () => {
-        setShowSavedOnly(true);
-        document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
-      },
-      active: showSavedOnly,
-    },
-    {
-      label: "Cart",
-      icon: "◌",
-      action: () => setIsCartOpen(true),
-      active: isCartOpen,
-    },
-  ];
 
   async function toggleSaved(id: string) {
     if (supabase) {
@@ -833,6 +797,7 @@ export default function Home() {
                 className={styles.accountButton}
                 onClick={() => {
                   setShowSavedOnly(true);
+                  setIsMobileMenuOpen(false);
                   document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
                 }}
               >
@@ -840,14 +805,20 @@ export default function Home() {
               </button>
               <button
                 className={styles.accountButton}
-                onClick={() => setIsOrdersOpen(true)}
+                onClick={() => {
+                  setIsOrdersOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 My orders
               </button>
               {profile?.account_type === "buyer" && (
                 <button
                   className={styles.accountButton}
-                  onClick={() => setIsSellerPromptOpen(true)}
+                  onClick={() => {
+                    setIsSellerPromptOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
                 >
                   Become a seller
                 </button>
@@ -862,6 +833,7 @@ export default function Home() {
               onClick={() => {
                 setIsSignUp(false);
                 setIsAuthOpen(true);
+                setIsMobileMenuOpen(false);
               }}
             >
               Sign in
@@ -879,7 +851,92 @@ export default function Home() {
             </svg>
             <span className={styles.cartCount}>{cartCount}</span>
           </button>
+          <button
+            className={styles.mobileMenuButton}
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            type="button"
+          >
+            <span />
+            <span />
+            <span />
+          </button>
         </div>
+        {isMobileMenuOpen && (
+          <nav className={styles.mobileMenuPanel} aria-label="Mobile menu">
+            <button
+              onClick={() => {
+                setActiveCategory("All parts");
+                setShowSavedOnly(false);
+                setIsMobileMenuOpen(false);
+                document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              type="button"
+            >
+              Marketplace
+            </button>
+            <button
+              onClick={() => {
+                setActiveCategory("All parts");
+                setIsMobileMenuOpen(false);
+                document.getElementById("categories")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              type="button"
+            >
+              Browse parts
+            </button>
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              type="button"
+            >
+              How it works
+            </button>
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                openSellForm();
+              }}
+              type="button"
+            >
+              Sell a part
+            </button>
+            <button
+              onClick={() => {
+                setShowSavedOnly(true);
+                setIsMobileMenuOpen(false);
+                document.getElementById("marketplace")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              type="button"
+            >
+              Saved ({saved.length})
+            </button>
+            {!supabase || !user ? (
+              <button
+                onClick={() => {
+                  setIsSignUp(false);
+                  setIsAuthOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                type="button"
+              >
+                Sign in
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  void signOut();
+                  setIsMobileMenuOpen(false);
+                }}
+                type="button"
+              >
+                Sign out
+              </button>
+            )}
+          </nav>
+        )}
       </header>
 
       {supabaseConfigurationIncomplete ? (
@@ -1149,20 +1206,6 @@ export default function Home() {
         <span>Good parts deserve another build. © 2026 Partsy Market</span>
         <a href="#marketplace">Back to the top ↑</a>
       </footer>
-
-      <nav className={styles.mobileNav} aria-label="Mobile navigation">
-        {mobileNavItems.map((item) => (
-          <button
-            key={item.label}
-            className={`${styles.mobileNavItem} ${item.active ? styles.mobileNavItemActive : ""}`}
-            onClick={item.action}
-            type="button"
-          >
-            <span className={styles.mobileNavIcon}>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
 
       {notice && <div className={styles.toast} role="status">{notice}</div>}
 
